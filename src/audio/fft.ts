@@ -1,5 +1,12 @@
 export default class FFT {
-  constructor(samplesIn, samplesOut, equalize = false) {
+  samplesIn: number
+  samplesOut: number
+  equalize: boolean
+  NFREQ: number
+  equalizeArr!: Float32Array
+  bitrevtable!: Uint16Array
+  cossintable!: [Float32Array, Float32Array]
+  constructor(samplesIn: number, samplesOut: number, equalize = false) {
     this.samplesIn = samplesIn
     this.samplesOut = samplesOut
     this.equalize = equalize
@@ -68,7 +75,7 @@ export default class FFT {
     }
   }
 
-  timeToFrequencyDomain(waveDataIn) {
+  timeToFrequencyDomain(waveDataIn: Float32Array): Float32Array {
     const real = new Float32Array(this.NFREQ)
     const imag = new Float32Array(this.NFREQ)
 

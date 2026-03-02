@@ -1,5 +1,4 @@
-import type { RNGContext } from './seededRandom'
-import { createDefaultRNGContext, createRNGContext } from './seededRandom'
+import { SeededRandom } from './seededRandom'
 
 let globalRNG: RNGContext | null = null
 let originalRand: ((x: number) => number) | null = null
@@ -10,6 +9,14 @@ interface RNGOptions {
   deterministic?: boolean
   testMode?: boolean
   seed?: number
+}
+
+export interface RNGContext {
+  random: () => number
+  rand: (x: number) => number
+  randint: (x: number) => number
+  getRNG: () => SeededRandom | null
+  reset: (newSeed?: number) => void
 }
 
 export function initializeRNG(opts: RNGOptions = {}) {
@@ -40,7 +47,7 @@ export function initializeRNG(opts: RNGOptions = {}) {
   return globalRNG
 }
 
-export function getRNG() {
+export function getRNG(): RNGContext {
   if (!globalRNG) {
     globalRNG = createDefaultRNGContext()
   }
@@ -62,4 +69,33 @@ export function cleanup() {
   }
 
   globalRNG = null
+}
+
+export function createRNGContext(seed = 1): RNGContext {
+  const rng = new SeededRandom(seed)
+
+  return {
+    random: () => rng.next(),
+    rand: x => rng.rand(x),
+    randint: x => Math.floor(rng.rand(x) + 1),
+    getRNG: () => rng,
+    reset: (newSeed) => {
+      if (newSeed !== undefined) {
+        rng.reset(newSeed)
+      }
+      else {
+        rng.reset(seed)
+      }
+    },
+  }
+}
+
+export function createDefaultRNGContext(): RNGContext {
+  return {
+    random: Math.random,
+    rand: x => x < 1 ? Math.random() : Math.random() * Math.floor(x),
+    randint: x => Math.floor((x < 1 ? Math.random() : Math.random() * Math.floor(x)) + 1),
+    getRNG: () => null,
+    reset: () => {},
+  }
 }

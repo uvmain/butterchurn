@@ -2,13 +2,6 @@
  * SeededRandom - Deterministic pseudo-random number generator
  * Using xorshift128+ algorithm
  */
-export interface RNGContext {
-  random: () => number
-  rand: (x: number) => number
-  randint: (x: number) => number
-  getRNG: () => SeededRandom | null
-  reset: (newSeed?: number) => void
-}
 
 export class SeededRandom {
   state: Uint32Array
@@ -75,34 +68,5 @@ export class SeededRandom {
   reset(seed: number) {
     SeededRandom.initializeState(this.state, seed)
     this.warmUp()
-  }
-}
-
-export function createRNGContext(seed = 1): RNGContext {
-  const rng = new SeededRandom(seed)
-
-  return {
-    random: () => rng.next(),
-    rand: x => rng.rand(x),
-    randint: x => Math.floor(rng.rand(x) + 1),
-    getRNG: () => rng,
-    reset: (newSeed) => {
-      if (newSeed !== undefined) {
-        rng.reset(newSeed)
-      }
-      else {
-        rng.reset(seed)
-      }
-    },
-  }
-}
-
-export function createDefaultRNGContext(): RNGContext {
-  return {
-    random: Math.random,
-    rand: x => x < 1 ? Math.random() : Math.random() * Math.floor(x),
-    randint: x => Math.floor((x < 1 ? Math.random() : Math.random() * Math.floor(x)) + 1),
-    getRNG: () => null,
-    reset: () => {},
   }
 }
