@@ -4,8 +4,6 @@ import { defineConfig } from 'vite'
 import assemblyscriptPlugin from './config/vite-plugin-assemblyscript.js'
 
 export default defineConfig(() => {
-  const isProduction = process.env.NODE_ENV === 'production'
-
   return {
     plugins: [
       assemblyscriptPlugin({
@@ -19,10 +17,6 @@ export default defineConfig(() => {
           isSupported: resolve(process.cwd(), 'src/isSupported.js'),
         },
         formats: ['es'],
-        fileName: (format, entryName) => {
-          const suffix = isProduction ? '.min.js' : '.js'
-          return `${entryName}${suffix}`
-        },
       },
       rollupOptions: {
         external: [],
@@ -33,14 +27,12 @@ export default defineConfig(() => {
       },
       sourcemap: true,
       target: 'es2020',
-      minify: isProduction ? 'terser' : false,
-      terserOptions: isProduction
-        ? {
-            compress: {
-              drop_console: false,
-            },
-          }
-        : undefined,
+      minify: 'terser',
+      terserOptions: {
+        compress: {
+          drop_console: false,
+        },
+      },
     },
     resolve: {
       alias: {
