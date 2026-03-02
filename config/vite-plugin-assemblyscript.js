@@ -1,5 +1,5 @@
 import buffer from 'node:buffer'
-import asc from 'assemblyscript/cli/asc'
+import asc from 'assemblyscript/asc'
 import { createFilter } from 'vite'
 
 function assemblyscriptPlugin(options = {}) {
@@ -15,16 +15,24 @@ function assemblyscriptPlugin(options = {}) {
       }
 
       await asc.ready
-      const { binary, stderr } = asc.compileString(code, {
+      const result = await asc.compileString(code, {
         optimize: true,
         optimizeLevel: 3,
-        runtime: 'none',
+        runtime: 'stub',
         pedantic: true,
         // noUnsafe: true,
       })
 
-      if (stderr.toString()) {
+      const binary = result.binary || result
+      const stderr = result.stderr || result.error
+
+      if (stderr && stderr.length > 0) {
         this.error(stderr.toString())
+        return
+      }
+
+      if (!binary) {
+        this.error('AssemblyScript compilation failed: no binary output')
         return
       }
 
