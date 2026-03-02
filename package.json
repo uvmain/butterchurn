@@ -1,10 +1,23 @@
 {
   "name": "butterchurn",
+  "type": "module",
   "version": "3.0.0-beta.5",
   "description": "Butterchurn is a WebGL implementation of the Milkdrop Visualizer",
+  "author": "Jordan Berg <jordannealberg@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://butterchurnviz.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jberg/butterchurn.git"
+  },
+  "keywords": [
+    "music visualization",
+    "visualizer",
+    "webgl",
+    "webaudio"
+  ],
   "main": "dist/butterchurn.js",
   "module": "dist/butterchurn.js",
-  "type": "module",
   "unpkg": "dist/butterchurn.js",
   "files": [
     "dist/butterchurn.js",
@@ -16,6 +29,8 @@
     "build:dev": "cross-env NODE_ENV=development rollup -c",
     "dev": "rollup -c -w",
     "dev-build": "rollup -c",
+    "lint": "eslint \"**/*.{ts,js}\"",
+    "lint:fix": "eslint \"**/*.{ts,js}\" --fix",
     "test": "node --test test/**/*.test.js",
     "test:visual": "node --test test/visual/regression.test.js",
     "test:visual:update": "cross-env UPDATE_SNAPSHOTS=true node --test test/visual/regression.test.js",
@@ -23,25 +38,13 @@
     "test:visual:local": "npm run build:dev && npm run test:visual",
     "test:visual:view": "start test/visual/__image_snapshots__/__diff_output__"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jberg/butterchurn.git"
-  },
-  "keywords": [
-    "music visualization",
-    "visualizer",
-    "webgl",
-    "webaudio"
-  ],
-  "author": "Jordan Berg <jordannealberg@gmail.com>",
-  "license": "MIT",
-  "homepage": "https://butterchurnviz.com",
   "dependencies": {
     "@assemblyscript/loader": "^0.17.11",
     "ecma-proposal-math-extensions": "0.0.2",
     "eel-wasm": "^0.0.16"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "^7.6.1",
     "@rollup/plugin-commonjs": "^28.0.6",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@rollup/plugin-terser": "^0.4.4",
@@ -50,9 +53,7 @@
     "butterchurn-presets": "3.0.0-beta.4",
     "butterchurn-presets-js": "npm:butterchurn-presets@^2.4.7",
     "cross-env": "^10.1.0",
-    "eslint": "^7.9.0",
-    "eslint-plugin-prettier": "^3.1.4",
-    "prettier": "^2.1.2",
+    "eslint": "^10.0.2",
     "puppeteer": "^24.12.1",
     "rollup": "^4.44.2",
     "rollup-plugin-copy": "^3.5.0"

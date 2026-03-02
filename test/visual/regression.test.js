@@ -1,42 +1,43 @@
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
-import { describe, test, before, after } from 'node:test';
-import assert from 'node:assert';
-import { getBrowser, closeBrowser, createPage } from './utils/puppeteer.js';
-import { renderButterchurn } from './utils/renderButterchurn.js';
-import TestServer from './utils/testServer.js';
-import { toMatchImageSnapshot, imageSnapshotConfig } from './setup.js';
+import assert from 'node:assert'
+import crypto from 'node:crypto'
+import fs from 'node:fs'
+import path from 'node:path'
+import { after, before, describe, test } from 'node:test'
+import { imageSnapshotConfig, toMatchImageSnapshot } from './setup.js'
+import { closeBrowser, createPage, getBrowser } from './utils/puppeteer.js'
+import { renderButterchurn } from './utils/renderButterchurn.js'
+import TestServer from './utils/testServer.js'
 
-const FRAMES_TO_RENDER = 120;
-const SEED1 = 12345;
-const SEED2 = 54321;
+const FRAMES_TO_RENDER = 120
+const SEED1 = 12345
+const SEED2 = 54321
 
 describe('Butterchurn Visual Regression Tests', () => {
-  let testServer;
-  let serverUrl;
+  let testServer
+  let serverUrl
 
-  const width = 800;
-  const height = 600;
+  const width = 800
+  const height = 600
 
   before(async () => {
-    testServer = new TestServer();
-    await testServer.start();
-    serverUrl = testServer.getUrl();
-    await getBrowser();
-  });
+    testServer = new TestServer()
+    await testServer.start()
+    serverUrl = testServer.getUrl()
+    await getBrowser()
+  })
 
   after(async () => {
-    await closeBrowser();
-    await testServer.stop();
-  });
+    await closeBrowser()
+    await testServer.stop()
+  })
 
+  /* cspell: disable */
   const presetsSeedIndependent = [
     '_Mig_085',
     'Aderrasi - Potion of Spirits',
     'Flexi - mindblob mix',
     'Unchained - Rewop',
-  ];
+  ]
 
   const presetsSeedDependent = [
     'flexi + geiss - pogo cubes vs. tokamak vs. game of life [stahls jelly 4.5 finish]',
@@ -45,103 +46,108 @@ describe('Butterchurn Visual Regression Tests', () => {
     'martin - castle in the air',
     'martin - witchcraft reloaded',
     'yin - 191 - Temporal singularities',
-  ];
+  ]
+  /* cspell: enable */
 
   const testCases = [
     ...presetsSeedIndependent.map(preset => ({
       name: preset,
-      seedIndependent: true
+      seedIndependent: true,
     })),
     ...presetsSeedDependent.map(preset => ({
       name: preset,
-      seedIndependent: false
-    }))
-  ].sort(() => 0.5 - Math.random());
+      seedIndependent: false,
+    })),
+  ].sort(() => 0.5 - Math.random())
 
-  let testAudioData;
+  let testAudioData
   before(() => {
-    const audioFilePath = path.join(process.cwd(), 'test/fixtures/audioAnalysisData.json');
+    const audioFilePath = path.join(process.cwd(), 'test/fixtures/audioAnalysisData.json')
     if (!fs.existsSync(audioFilePath)) {
-      throw new Error(`Audio analysis file not found: ${audioFilePath}\nPlease ensure audioAnalysisData.json is in the test/fixtures directory`);
+      throw new Error(`Audio analysis file not found: ${audioFilePath}\nPlease ensure audioAnalysisData.json is in the test/fixtures directory`)
     }
-    testAudioData = JSON.parse(fs.readFileSync(audioFilePath, 'utf8'));
-  });
+    testAudioData = JSON.parse(fs.readFileSync(audioFilePath, 'utf8'))
+  })
 
   testCases.forEach(({ name, seedIndependent }) => {
     // JS preset tests (default, matches existing snapshots)
     test(`${name} - comprehensive regression test (JS)`, async () => {
-      const page = await createPage();
+      const page = await createPage()
 
       try {
-        const audioData = testAudioData.slice(0, FRAMES_TO_RENDER);
-        const cleanName = name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+        const audioData = testAudioData.slice(0, FRAMES_TO_RENDER)
+        const cleanName = name.replace(/[^a-z0-9]/gi, '-').toLowerCase()
 
-        const screenshot1 = await renderButterchurn(page, serverUrl, width, height, name, audioData, FRAMES_TO_RENDER, SEED1, 'js');
+        const screenshot1 = await renderButterchurn(page, serverUrl, width, height, name, audioData, FRAMES_TO_RENDER, SEED1, 'js')
 
         // Use custom image snapshot matcher
         assert.ok(toMatchImageSnapshot(screenshot1, {
           ...imageSnapshotConfig,
-          customSnapshotIdentifier: () => `${cleanName}-${SEED1}`
-        }), 'First screenshot should match snapshot');
+          customSnapshotIdentifier: () => `${cleanName}-${SEED1}`,
+        }), 'First screenshot should match snapshot')
 
-        const screenshot2 = await renderButterchurn(page, serverUrl, width, height, name, audioData, FRAMES_TO_RENDER, SEED2, 'js');
+        const screenshot2 = await renderButterchurn(page, serverUrl, width, height, name, audioData, FRAMES_TO_RENDER, SEED2, 'js')
 
-        // Use custom image snapshot matcher  
+        // Use custom image snapshot matcher
         assert.ok(toMatchImageSnapshot(screenshot2, {
           ...imageSnapshotConfig,
-          customSnapshotIdentifier: () => `${cleanName}-${SEED2}`
-        }), 'Second screenshot should match snapshot');
+          customSnapshotIdentifier: () => `${cleanName}-${SEED2}`,
+        }), 'Second screenshot should match snapshot')
 
         // Compare image hashes instead of raw buffers to avoid slow diff generation
-        const hash1 = crypto.createHash('sha256').update(screenshot1).digest('hex');
-        const hash2 = crypto.createHash('sha256').update(screenshot2).digest('hex');
+        const hash1 = crypto.createHash('sha256').update(screenshot1).digest('hex')
+        const hash2 = crypto.createHash('sha256').update(screenshot2).digest('hex')
 
         if (seedIndependent) {
-          assert.strictEqual(hash2, hash1, 'Hashes should be equal for seed-independent presets');
-        } else {
-          assert.notStrictEqual(hash2, hash1, 'Hashes should be different for seed-dependent presets');
+          assert.strictEqual(hash2, hash1, 'Hashes should be equal for seed-independent presets')
         }
-      } finally {
-        await page.close();
+        else {
+          assert.notStrictEqual(hash2, hash1, 'Hashes should be different for seed-dependent presets')
+        }
       }
-    });
+      finally {
+        await page.close()
+      }
+    })
 
     // WASM preset tests (new, with _wasm suffix)
     test(`${name} - comprehensive regression test (WASM)`, async () => {
-      const page = await createPage();
+      const page = await createPage()
 
       try {
-        const audioData = testAudioData.slice(0, FRAMES_TO_RENDER);
-        const cleanName = name.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+        const audioData = testAudioData.slice(0, FRAMES_TO_RENDER)
+        const cleanName = name.replace(/[^a-z0-9]/gi, '-').toLowerCase()
 
-        const screenshot1 = await renderButterchurn(page, serverUrl, width, height, name, audioData, FRAMES_TO_RENDER, SEED1, 'wasm');
+        const screenshot1 = await renderButterchurn(page, serverUrl, width, height, name, audioData, FRAMES_TO_RENDER, SEED1, 'wasm')
 
         // Use custom image snapshot matcher
         assert.ok(toMatchImageSnapshot(screenshot1, {
           ...imageSnapshotConfig,
-          customSnapshotIdentifier: () => `${cleanName}-${SEED1}_wasm`
-        }), 'First WASM screenshot should match snapshot');
+          customSnapshotIdentifier: () => `${cleanName}-${SEED1}_wasm`,
+        }), 'First WASM screenshot should match snapshot')
 
-        const screenshot2 = await renderButterchurn(page, serverUrl, width, height, name, audioData, FRAMES_TO_RENDER, SEED2, 'wasm');
+        const screenshot2 = await renderButterchurn(page, serverUrl, width, height, name, audioData, FRAMES_TO_RENDER, SEED2, 'wasm')
 
         // Use custom image snapshot matcher
         assert.ok(toMatchImageSnapshot(screenshot2, {
           ...imageSnapshotConfig,
-          customSnapshotIdentifier: () => `${cleanName}-${SEED2}_wasm`
-        }), 'Second WASM screenshot should match snapshot');
+          customSnapshotIdentifier: () => `${cleanName}-${SEED2}_wasm`,
+        }), 'Second WASM screenshot should match snapshot')
 
         // Compare image hashes instead of raw buffers to avoid slow diff generation
-        const hash1 = crypto.createHash('sha256').update(screenshot1).digest('hex');
-        const hash2 = crypto.createHash('sha256').update(screenshot2).digest('hex');
+        const hash1 = crypto.createHash('sha256').update(screenshot1).digest('hex')
+        const hash2 = crypto.createHash('sha256').update(screenshot2).digest('hex')
 
         if (seedIndependent) {
-          assert.strictEqual(hash2, hash1, 'WASM hashes should be equal for seed-independent presets');
-        } else {
-          assert.notStrictEqual(hash2, hash1, 'WASM hashes should be different for seed-dependent presets');
+          assert.strictEqual(hash2, hash1, 'WASM hashes should be equal for seed-independent presets')
         }
-      } finally {
-        await page.close();
+        else {
+          assert.notStrictEqual(hash2, hash1, 'WASM hashes should be different for seed-dependent presets')
+        }
       }
-    });
-  });
-});
+      finally {
+        await page.close()
+      }
+    })
+  })
+})

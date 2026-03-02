@@ -1,9 +1,10 @@
-import { nodeResolve } from '@rollup/plugin-node-resolve';
-import commonjs from '@rollup/plugin-commonjs';
-import terser from '@rollup/plugin-terser';
-import assemblyscriptPlugin from './config/rollup-plugin-assemblyscript.js';
+import process from 'node:process'
+import commonjs from '@rollup/plugin-commonjs'
+import { nodeResolve } from '@rollup/plugin-node-resolve'
+import terser from '@rollup/plugin-terser'
+import assemblyscriptPlugin from './config/rollup-plugin-assemblyscript.js'
 
-const isProduction = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === 'production'
 
 const baseConfig = {
   plugins: [
@@ -18,9 +19,9 @@ const baseConfig = {
   ],
   external: () => {
     // External dependencies that should not be bundled
-    return false;
+    return false
   },
-};
+}
 
 const configs = [
   // Main butterchurn bundle
@@ -55,6 +56,6 @@ const configs = [
       ...(isProduction ? [terser()] : []),
     ],
   },
-];
+]
 
-export default configs;
+export default configs

@@ -1,7 +1,7 @@
-import { createImageSnapshotMatcher } from '../utils/imageSnapshot.js';
+import { createImageSnapshotMatcher } from '../utils/imageSnapshot.js'
 
 // Create the image snapshot matcher
-export const toMatchImageSnapshot = createImageSnapshotMatcher();
+export const toMatchImageSnapshot = createImageSnapshotMatcher()
 
 export const imageSnapshotConfig = {
   // Expect pixel-perfect matches (0% tolerance)
@@ -18,7 +18,7 @@ export const imageSnapshotConfig = {
   storeReceivedOnFailure: true,
 
   customSnapshotIdentifier: ({ currentTestName, counter }) => {
-    const testName = currentTestName.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-    return `${testName}-${counter}`;
-  }
-};
+    const testName = currentTestName.replace(/[^a-z0-9]/gi, '-').toLowerCase()
+    return `${testName}-${counter}`
+  },
+}

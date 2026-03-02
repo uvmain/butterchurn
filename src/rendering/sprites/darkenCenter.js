@@ -1,15 +1,15 @@
-import ShaderUtils from "../shaders/shaderUtils";
+import ShaderUtils from '../shaders/shaderUtils'
 
 export default class CustomShape {
   constructor(gl, opts) {
-    this.gl = gl;
+    this.gl = gl
 
-    this.aspectx = opts.aspectx;
-    this.aspecty = opts.aspecty;
-    this.invAspectx = 1.0 / this.aspectx;
-    this.invAspecty = 1.0 / this.aspecty;
+    this.aspectx = opts.aspectx
+    this.aspecty = opts.aspecty
+    this.invAspectx = 1.0 / this.aspectx
+    this.invAspecty = 1.0 / this.aspecty
 
-    this.generatePositions();
+    this.generatePositions()
 
     this.colors = new Float32Array([
       0,
@@ -36,26 +36,26 @@ export default class CustomShape {
       0,
       0,
       0,
-    ]);
+    ])
 
-    this.positionVertexBuf = this.gl.createBuffer();
-    this.colorVertexBuf = this.gl.createBuffer();
+    this.positionVertexBuf = this.gl.createBuffer()
+    this.colorVertexBuf = this.gl.createBuffer()
 
-    this.floatPrecision = ShaderUtils.getFragmentFloatPrecision(this.gl);
-    this.createShader();
+    this.floatPrecision = ShaderUtils.getFragmentFloatPrecision(this.gl)
+    this.createShader()
   }
 
   updateGlobals(opts) {
-    this.aspectx = opts.aspectx;
-    this.aspecty = opts.aspecty;
-    this.invAspectx = 1.0 / this.aspectx;
-    this.invAspecty = 1.0 / this.aspecty;
+    this.aspectx = opts.aspectx
+    this.aspecty = opts.aspecty
+    this.invAspectx = 1.0 / this.aspectx
+    this.invAspecty = 1.0 / this.aspecty
 
-    this.generatePositions();
+    this.generatePositions()
   }
 
   generatePositions() {
-    const halfSize = 0.05;
+    const halfSize = 0.05
     this.positions = new Float32Array([
       0,
       0,
@@ -75,13 +75,13 @@ export default class CustomShape {
       -halfSize * this.aspecty,
       0,
       0,
-    ]);
+    ])
   }
 
   createShader() {
-    this.shaderProgram = this.gl.createProgram();
+    this.shaderProgram = this.gl.createProgram()
 
-    const vertShader = this.gl.createShader(this.gl.VERTEX_SHADER);
+    const vertShader = this.gl.createShader(this.gl.VERTEX_SHADER)
     this.gl.shaderSource(
       vertShader,
       `
@@ -93,11 +93,11 @@ export default class CustomShape {
         vColor = aColor;
         gl_Position = vec4(aPos, 1.0);
       }
-      `.trim()
-    );
-    this.gl.compileShader(vertShader);
+      `.trim(),
+    )
+    this.gl.compileShader(vertShader)
 
-    const fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
+    const fragShader = this.gl.createShader(this.gl.FRAGMENT_SHADER)
     this.gl.shaderSource(
       fragShader,
       `
@@ -110,31 +110,31 @@ export default class CustomShape {
       void main(void) {
         fragColor = vColor;
       }
-      `.trim()
-    );
-    this.gl.compileShader(fragShader);
+      `.trim(),
+    )
+    this.gl.compileShader(fragShader)
 
-    this.gl.attachShader(this.shaderProgram, vertShader);
-    this.gl.attachShader(this.shaderProgram, fragShader);
-    this.gl.linkProgram(this.shaderProgram);
+    this.gl.attachShader(this.shaderProgram, vertShader)
+    this.gl.attachShader(this.shaderProgram, fragShader)
+    this.gl.linkProgram(this.shaderProgram)
 
-    this.aPosLocation = this.gl.getAttribLocation(this.shaderProgram, "aPos");
+    this.aPosLocation = this.gl.getAttribLocation(this.shaderProgram, 'aPos')
     this.aColorLocation = this.gl.getAttribLocation(
       this.shaderProgram,
-      "aColor"
-    );
+      'aColor',
+    )
   }
 
   drawDarkenCenter(mdVSFrame) {
     if (mdVSFrame.darken_center !== 0) {
-      this.gl.useProgram(this.shaderProgram);
+      this.gl.useProgram(this.shaderProgram)
 
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionVertexBuf);
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.positionVertexBuf)
       this.gl.bufferData(
         this.gl.ARRAY_BUFFER,
         this.positions,
-        this.gl.STATIC_DRAW
-      );
+        this.gl.STATIC_DRAW,
+      )
 
       this.gl.vertexAttribPointer(
         this.aPosLocation,
@@ -142,16 +142,16 @@ export default class CustomShape {
         this.gl.FLOAT,
         false,
         0,
-        0
-      );
-      this.gl.enableVertexAttribArray(this.aPosLocation);
+        0,
+      )
+      this.gl.enableVertexAttribArray(this.aPosLocation)
 
-      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.colorVertexBuf);
+      this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.colorVertexBuf)
       this.gl.bufferData(
         this.gl.ARRAY_BUFFER,
         this.colors,
-        this.gl.STATIC_DRAW
-      );
+        this.gl.STATIC_DRAW,
+      )
 
       this.gl.vertexAttribPointer(
         this.aColorLocation,
@@ -159,13 +159,13 @@ export default class CustomShape {
         this.gl.FLOAT,
         false,
         0,
-        0
-      );
-      this.gl.enableVertexAttribArray(this.aColorLocation);
+        0,
+      )
+      this.gl.enableVertexAttribArray(this.aColorLocation)
 
-      this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+      this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA)
 
-      this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, this.positions.length / 3);
+      this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, this.positions.length / 3)
     }
   }
 }

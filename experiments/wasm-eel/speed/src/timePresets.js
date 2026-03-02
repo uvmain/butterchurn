@@ -1,68 +1,68 @@
-const fs = require("fs");
-const path = require("path");
-const puppeteer = require("puppeteer");
+const fs = require('node:fs')
+const process = require('node:process')
+const puppeteer = require('puppeteer')
 
-const args = process.argv.slice(2);
+const args = process.argv.slice(2)
 if (args.length < 1) {
   console.log(
-    "not enough arguments: yarn run time-presets audio-analysis-file output-json"
-  );
-  process.exit(1);
+    'not enough arguments: yarn run time-presets audio-analysis-file output-json',
+  )
+  process.exit(1)
 }
 
-const onlyPresetsWithPixelEqs = false;
-const presetList = JSON.parse(fs.readFileSync("presetList.json").toString())
-  .test;
+const onlyPresetsWithPixelEqs = false
+const presetList = JSON.parse(fs.readFileSync('presetList.json').toString())
+  .test
 
-const audioAnalysis = JSON.parse(fs.readFileSync(args[0]).toString());
-let outputJSON = {};
+const audioAnalysis = JSON.parse(fs.readFileSync(args[0]).toString())
+let outputJSON = {}
 if (args[1]) {
-  outputJSON = JSON.parse(fs.readFileSync(args[1]).toString());
+  outputJSON = JSON.parse(fs.readFileSync(args[1]).toString())
 }
 
-let presetStartIdx = 0;
+let presetStartIdx = 0
 Object.keys(outputJSON).forEach((presetName) => {
-  const presetIdx = presetList.indexOf(presetName) + 1;
+  const presetIdx = presetList.indexOf(presetName) + 1
   if (presetIdx > presetStartIdx) {
-    presetStartIdx = presetIdx;
+    presetStartIdx = presetIdx
   }
-});
+})
 
-console.log("Starting at preset index: ", presetStartIdx);
+console.log('Starting at preset index: ', presetStartIdx)
 
 function clonePreset(preset) {
-  return JSON.parse(JSON.stringify(preset));
+  return JSON.parse(JSON.stringify(preset))
 }
 
 function average(arr) {
-  return arr.reduce((p, c) => p + c, 0) / arr.length;
+  return arr.reduce((p, c) => p + c, 0) / arr.length
 }
 
 function shuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+    [array[i], array[j]] = [array[j], array[i]]
   }
 }
 
 (async () => {
-  const width = 800;
-  const height = 600;
-  const frameCount = 300;
-  const trials = 5;
-  const browser = await puppeteer.launch({ headless: false });
+  const width = 800
+  const height = 600
+  const frameCount = 300
+  const trials = 5
+  const browser = await puppeteer.launch({ headless: false })
 
   for (let i = presetStartIdx; i < presetList.length; i++) {
-    const presetName = presetList[i];
+    const presetName = presetList[i]
     const presetJSON = JSON.parse(
-      fs.readFileSync(`../presets/${presetName}`).toString()
-    );
+      fs.readFileSync(`../presets/${presetName}`).toString(),
+    )
 
-    const pixelEqs = presetJSON.pixel_eqs_str;
-    const hasPixelEqs = !(!pixelEqs || pixelEqs === "");
+    const pixelEqs = presetJSON.pixel_eqs_str
+    const hasPixelEqs = !(!pixelEqs || pixelEqs === '')
 
     if (onlyPresetsWithPixelEqs && !hasPixelEqs) {
-      continue;
+      continue
     }
 
     const presetData = {
@@ -73,23 +73,22 @@ function shuffleArray(array) {
       jsAvg: null,
       wasmAvg: null,
       moreWasmAvg: null,
-    };
+    }
 
     for (let j = 0; j < trials; j++) {
-      const equationTypes = ["useMoreWASM", "useWASM", "JS"];
-      shuffleArray(equationTypes);
+      const equationTypes = ['useMoreWASM', 'useWASM', 'JS']
+      shuffleArray(equationTypes)
       for (const equationType of equationTypes) {
-        const useWASM = ["useMoreWASM", "useWASM"].includes(equationType);
-        const useMoreWASM = equationType === "useMoreWASM";
-        let preset = clonePreset(presetJSON);
-        preset.useWASM = useWASM;
-        preset.useMoreWASM = useMoreWASM;
+        const useWASM = ['useMoreWASM', 'useWASM'].includes(equationType)
+        const useMoreWASM = equationType === 'useMoreWASM'
+        const preset = clonePreset(presetJSON)
+        preset.useWASM = useWASM
+        preset.useMoreWASM = useMoreWASM
 
-        const page = await browser.newPage();
-        page.on("console", (msg) => console.log("PAGE LOG:", msg.text()));
-        page.on("pageerror", (err) =>
-          console.log("PAGE ERROR: " + err.toString())
-        );
+        const page = await browser.newPage()
+        page.on('console', msg => console.log('PAGE LOG:', msg.text()))
+        page.on('pageerror', err =>
+          console.log(`PAGE ERROR: ${err.toString()}`))
         const html = `
           <!DOCTYPE html>
             <head>
@@ -172,31 +171,31 @@ function shuffleArray(array) {
                 <canvas id='canvas' width='${width}' height='${height}'></canvas>
               </div>
             </body>
-          </html>`;
-        await page.setViewport({ width, height, deviceScaleFactor: 1 });
+          </html>`
+        await page.setViewport({ width, height, deviceScaleFactor: 1 })
 
         const timeout = setTimeout(async () => {
-          console.log("Timed out, killing process");
-          await page.close();
-        }, 180000);
+          console.log('Timed out, killing process')
+          await page.close()
+        }, 180000)
 
         try {
-          await page.goto(`data:text/html;charset=UTF-8,${html}`);
+          await page.goto(`data:text/html;charset=UTF-8,${html}`)
 
           await page.evaluate(
-            (audioAnalysis) => window.setAudioAnalysis(audioAnalysis),
-            audioAnalysis
-          );
-          await page.evaluate((preset) => window.loadPreset(preset), preset);
-          await page.evaluate(() => window.renderFrames());
+            audioAnalysis => window.setAudioAnalysis(audioAnalysis),
+            audioAnalysis,
+          )
+          await page.evaluate(preset => window.loadPreset(preset), preset)
+          await page.evaluate(() => window.renderFrames())
 
           const resultHandle = await page.waitForFunction(
             () => window.getResults(),
             {
               polling: 2000,
-            }
-          );
-          const presetStats = await resultHandle.jsonValue();
+            },
+          )
+          const presetStats = await resultHandle.jsonValue()
 
           const totalStats = {
             calcFPS: 0,
@@ -212,126 +211,130 @@ function shuffleArray(array) {
             drawBasicWaveform: 0,
             drawBorderAndCenter: 0,
             renderToScreen: 0,
-          };
+          }
           for (let i = 0; i < presetStats.length; i++) {
-            const stats = presetStats[i];
+            const stats = presetStats[i]
 
-            totalStats.calcFPS += stats.calcFPS - stats.startTime;
-            totalStats.updateAudioLevels +=
-              stats.updateAudioLevels - stats.calcFPS;
-            totalStats.runFrameEquations +=
-              stats.runFrameEquations - stats.updateAudioLevels;
-            totalStats.runPixelEquations +=
-              stats.runPixelEquations - stats.runFrameEquations;
-            totalStats.getBlurValues +=
-              stats.getBlurValues - stats.runPixelEquations;
-            totalStats.warpShader += stats.warpShader - stats.getBlurValues;
-            totalStats.renderBlurTexture +=
-              stats.renderBlurTexture - stats.warpShader;
-            totalStats.drawMotionVectors +=
-              stats.drawMotionVectors - stats.renderBlurTexture;
-            totalStats.drawCustomShape +=
-              stats.drawCustomShape - stats.drawMotionVectors;
-            totalStats.drawCustomWaveform +=
-              stats.drawCustomWaveform - stats.drawCustomShape;
-            totalStats.drawBasicWaveform +=
-              stats.drawBasicWaveform - stats.drawCustomWaveform;
-            totalStats.drawBorderAndCenter +=
-              stats.drawBorderAndCenter - stats.drawBasicWaveform;
-            totalStats.renderToScreen +=
-              stats.renderToScreen - stats.drawBorderAndCenter;
+            totalStats.calcFPS += stats.calcFPS - stats.startTime
+            totalStats.updateAudioLevels
+              += stats.updateAudioLevels - stats.calcFPS
+            totalStats.runFrameEquations
+              += stats.runFrameEquations - stats.updateAudioLevels
+            totalStats.runPixelEquations
+              += stats.runPixelEquations - stats.runFrameEquations
+            totalStats.getBlurValues
+              += stats.getBlurValues - stats.runPixelEquations
+            totalStats.warpShader += stats.warpShader - stats.getBlurValues
+            totalStats.renderBlurTexture
+              += stats.renderBlurTexture - stats.warpShader
+            totalStats.drawMotionVectors
+              += stats.drawMotionVectors - stats.renderBlurTexture
+            totalStats.drawCustomShape
+              += stats.drawCustomShape - stats.drawMotionVectors
+            totalStats.drawCustomWaveform
+              += stats.drawCustomWaveform - stats.drawCustomShape
+            totalStats.drawBasicWaveform
+              += stats.drawBasicWaveform - stats.drawCustomWaveform
+            totalStats.drawBorderAndCenter
+              += stats.drawBorderAndCenter - stats.drawBasicWaveform
+            totalStats.renderToScreen
+              += stats.renderToScreen - stats.drawBorderAndCenter
           }
 
-          let totalStatsTime = 0;
-          totalStatsTime += totalStats.calcFPS;
-          totalStatsTime += totalStats.updateAudioLevels;
-          totalStatsTime += totalStats.runFrameEquations;
-          totalStatsTime += totalStats.runPixelEquations;
-          totalStatsTime += totalStats.getBlurValues;
-          totalStatsTime += totalStats.warpShader;
-          totalStatsTime += totalStats.renderBlurTexture;
-          totalStatsTime += totalStats.drawMotionVectors;
-          totalStatsTime += totalStats.drawCustomShape;
-          totalStatsTime += totalStats.drawCustomWaveform;
-          totalStatsTime += totalStats.drawBasicWaveform;
-          totalStatsTime += totalStats.drawBorderAndCenter;
-          totalStatsTime += totalStats.renderToScreen;
+          let totalStatsTime = 0
+          totalStatsTime += totalStats.calcFPS
+          totalStatsTime += totalStats.updateAudioLevels
+          totalStatsTime += totalStats.runFrameEquations
+          totalStatsTime += totalStats.runPixelEquations
+          totalStatsTime += totalStats.getBlurValues
+          totalStatsTime += totalStats.warpShader
+          totalStatsTime += totalStats.renderBlurTexture
+          totalStatsTime += totalStats.drawMotionVectors
+          totalStatsTime += totalStats.drawCustomShape
+          totalStatsTime += totalStats.drawCustomWaveform
+          totalStatsTime += totalStats.drawBasicWaveform
+          totalStatsTime += totalStats.drawBorderAndCenter
+          totalStatsTime += totalStats.renderToScreen
 
-          totalStats.time = totalStatsTime;
+          totalStats.time = totalStatsTime
 
           if (useMoreWASM) {
-            presetData.moreWasmTrials.push(totalStats);
-          } else if (useWASM) {
-            presetData.wasmTrials.push(totalStats);
-          } else {
-            presetData.jsTrials.push(totalStats);
+            presetData.moreWasmTrials.push(totalStats)
           }
-        } catch (e) {
-          console.error(e);
+          else if (useWASM) {
+            presetData.wasmTrials.push(totalStats)
+          }
+          else {
+            presetData.jsTrials.push(totalStats)
+          }
+        }
+        catch (e) {
+          console.error(e)
         }
 
-        clearTimeout(timeout);
+        clearTimeout(timeout)
 
         // this helps clear the memory
         // https://github.com/puppeteer/puppeteer/issues/1490#issuecomment-366217195
-        await page.goto("about:blank");
-        await page.close();
+        await page.goto('about:blank')
+        await page.close()
       }
     }
 
     if (
-      presetData.moreWasmTrials.length !== trials ||
-      presetData.wasmTrials.length !== trials ||
-      presetData.jsTrials.length !== trials
+      presetData.moreWasmTrials.length !== trials
+      || presetData.wasmTrials.length !== trials
+      || presetData.jsTrials.length !== trials
     ) {
-      console.error("Trial counts did not add up for ", presetName);
+      console.error('Trial counts did not add up for ', presetName)
       // just ignore this preset for now and keep going
-      continue;
+      continue
       // await browser.close();
       // process.exit(1);
     }
 
     for (const [trialType, avgType] of [
-      ["moreWasmTrials", "moreWasmAvg"],
-      ["wasmTrials", "wasmAvg"],
-      ["jsTrials", "jsAvg"],
+      ['moreWasmTrials', 'moreWasmAvg'],
+      ['wasmTrials', 'wasmAvg'],
+      ['jsTrials', 'jsAvg'],
     ]) {
-      const data = presetData[trialType];
+      const data = presetData[trialType]
       const averages = {
-        calcFPS: average(data.map((d) => d.calcFPS)),
-        updateAudioLevels: average(data.map((d) => d.updateAudioLevels)),
-        runFrameEquations: average(data.map((d) => d.runFrameEquations)),
-        runPixelEquations: average(data.map((d) => d.runPixelEquations)),
-        getBlurValues: average(data.map((d) => d.getBlurValues)),
-        warpShader: average(data.map((d) => d.warpShader)),
-        renderBlurTexture: average(data.map((d) => d.renderBlurTexture)),
-        drawMotionVectors: average(data.map((d) => d.drawMotionVectors)),
-        drawCustomShape: average(data.map((d) => d.drawCustomShape)),
-        drawCustomWaveform: average(data.map((d) => d.drawCustomWaveform)),
-        drawBasicWaveform: average(data.map((d) => d.drawBasicWaveform)),
-        drawBorderAndCenter: average(data.map((d) => d.drawBorderAndCenter)),
-        renderToScreen: average(data.map((d) => d.renderToScreen)),
-        time: average(data.map((d) => d.time)),
-      };
-
-      presetData[avgType] = averages;
-    }
-
-    outputJSON[presetName] = presetData;
-
-    let outputFile;
-    if (args[1]) {
-      outputFile = args[1];
-    } else {
-      outputFile = "./presetData.json";
-    }
-
-    fs.writeFile(outputFile, JSON.stringify(outputJSON), (err, data) => {
-      if (err) {
-        return console.log("error writing preset data", err);
+        calcFPS: average(data.map(d => d.calcFPS)),
+        updateAudioLevels: average(data.map(d => d.updateAudioLevels)),
+        runFrameEquations: average(data.map(d => d.runFrameEquations)),
+        runPixelEquations: average(data.map(d => d.runPixelEquations)),
+        getBlurValues: average(data.map(d => d.getBlurValues)),
+        warpShader: average(data.map(d => d.warpShader)),
+        renderBlurTexture: average(data.map(d => d.renderBlurTexture)),
+        drawMotionVectors: average(data.map(d => d.drawMotionVectors)),
+        drawCustomShape: average(data.map(d => d.drawCustomShape)),
+        drawCustomWaveform: average(data.map(d => d.drawCustomWaveform)),
+        drawBasicWaveform: average(data.map(d => d.drawBasicWaveform)),
+        drawBorderAndCenter: average(data.map(d => d.drawBorderAndCenter)),
+        renderToScreen: average(data.map(d => d.renderToScreen)),
+        time: average(data.map(d => d.time)),
       }
-    });
+
+      presetData[avgType] = averages
+    }
+
+    outputJSON[presetName] = presetData
+
+    let outputFile
+    if (args[1]) {
+      outputFile = args[1]
+    }
+    else {
+      outputFile = './presetData.json'
+    }
+
+    fs.writeFile(outputFile, JSON.stringify(outputJSON), (err, _data) => {
+      if (err) {
+        return console.log('error writing preset data', err)
+      }
+    })
   }
 
-  await browser.close();
-})();
+  await browser.close()
+})()

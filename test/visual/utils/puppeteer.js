@@ -1,6 +1,6 @@
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer'
 
-let browser = null;
+let browser = null
 
 async function getBrowser() {
   if (!browser) {
@@ -10,37 +10,37 @@ async function getBrowser() {
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--use-gl=swiftshader',
-        '--use-angle=swiftshader'
-      ]
-    });
+        '--use-angle=swiftshader',
+      ],
+    })
   }
-  return browser;
+  return browser
 }
 
 async function closeBrowser() {
   if (browser) {
-    await browser.close();
-    browser = null;
+    await browser.close()
+    browser = null
   }
 }
 
 async function createPage() {
-  const browserInstance = await getBrowser();
-  const page = await browserInstance.newPage();
+  const browserInstance = await getBrowser()
+  const page = await browserInstance.newPage()
 
-  page.on('console', msg => {
+  page.on('console', (msg) => {
     if (msg.type() === 'error') {
-      console.error('Browser console error:', msg.text());
+      console.error('Browser console error:', msg.text())
     }
-  });
+  })
 
-  page.on('pageerror', err => console.error('Browser page error:', err.toString()));
+  page.on('pageerror', err => console.error('Browser page error:', err.toString()))
 
-  return page;
+  return page
 }
 
 export {
-  getBrowser,
   closeBrowser,
-  createPage
-};
+  createPage,
+  getBrowser,
+}

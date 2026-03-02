@@ -1,42 +1,43 @@
-import asc from "assemblyscript/cli/asc";
-import { createFilter } from '@rollup/pluginutils';
+import buffer from 'node:buffer'
+import { createFilter } from '@rollup/pluginutils'
+import asc from 'assemblyscript/cli/asc'
 
 function assemblyscriptPlugin(options = {}) {
-  const filter = createFilter(options.include || /\.ts$/, options.exclude);
-  
+  const filter = createFilter(options.include || /\.ts$/, options.exclude)
+
   return {
     name: 'assemblyscript',
-    
+
     async transform(code, id) {
       if (!filter(id)) {
-        return null;
+        return null
       }
-      
-      await asc.ready;
+
+      await asc.ready
       const { binary, stderr } = asc.compileString(code, {
         optimize: true,
         optimizeLevel: 3,
-        runtime: "none",
+        runtime: 'none',
         pedantic: true,
         // noUnsafe: true,
-      });
-      
+      })
+
       if (stderr.toString()) {
-        this.error(stderr.toString());
-        return;
+        this.error(stderr.toString())
+        return
       }
 
       const output = `
-var data = "${Buffer.from(binary).toString("base64")}";
+var data = "${buffer.Buffer.from(binary).toString('base64')}";
 export default () => data;
-`;
-      
+`
+
       return {
         code: output,
-        map: null
-      };
-    }
-  };
+        map: null,
+      }
+    },
+  }
 }
 
-export default assemblyscriptPlugin;
+export default assemblyscriptPlugin

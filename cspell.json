@@ -1,0 +1,18 @@
+{
+  "version": "0.2",
+  "ignorePaths": [
+    "node_modules/**",
+    "dist/**"
+  ],
+  "dictionaryDefinitions": [],
+  "dictionaries": [],
+  "allowCompoundWords": true,
+  "language": "en-GB,en",
+  "minWordLength": 4,
+  "words": [
+    "stroustrup",
+    "webgl"
+  ],
+  "ignoreWords": [],
+  "import": []
+}
