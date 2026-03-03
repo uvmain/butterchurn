@@ -8,7 +8,7 @@ export default defineConfig(() => {
   return {
     plugins: [
       assemblyscriptPlugin({
-        include: 'src/assemblyscript/presetFunctions.ts',
+        include: 'src/assemblyscript/presetFunctions.as',
       }),
       dts({
         insertTypesEntry: true,

@@ -1,25 +1,4 @@
-interface PMap {
-  baseVals: Record<string, number>
-  init_eqs: () => Record<string, any>
-  frame_eqs: (m: Record<string, any>) => Record<string, any>
-  pixel_eqs: (m: Record<string, any>) => Record<string, any>
-  waves: Array<{
-    baseVals: Record<string, number>
-    init_eqs: (m: Record<string, any>) => Record<string, any>
-    frame_eqs: (m: Record<string, any>) => Record<string, any>
-    point_eqs: string
-  }>
-  shapes: Array<{
-    baseVals: Record<string, number>
-    init_eqs: (m: Record<string, any>) => Record<string, any>
-    frame_eqs: (m: Record<string, any>) => Record<string, any>
-    point_eqs?: string
-  }>
-  warp: string
-  comp: string
-}
-
-const pmap: PMap = {
+const pmap = {
   baseVals: {
     gammaadj: 1.25,
     wave_g: 0.5,

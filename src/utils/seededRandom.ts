@@ -12,7 +12,7 @@ export class SeededRandom {
     this.warmUp()
   }
 
-  static initializeState(state, seed) {
+  static initializeState(state: Uint32Array, seed: number) {
     state[0] = seed
     state[1] = seed ^ 0x9E3779B9
     state[2] = seed ^ 0x6A09E667

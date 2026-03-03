@@ -1,0 +1,8 @@
+{
+  "typescript.preferences.includePackageJsonAutoImports": "off",
+  "files.associations": {
+    "**/assemblyscript/**/*.as": "assemblyscript"
+  },
+  "editor.formatOnSave": true,
+  "typescript.validate.enable": true
+}

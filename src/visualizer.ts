@@ -1,18 +1,41 @@
-import ascLoader from '@assemblyscript/loader'
+import type { BaseVals } from './types/BasePreset'
+import type { PresetFunctionsModule } from './types/PresetFunctions'
+import type { RNGContext, RNGOptions } from './utils/rngContext'
+import * as ascLoader from '@assemblyscript/loader'
 import { loadModule } from 'eel-wasm'
-import loadPresetFunctionsBuffer from './assemblyscript/presetFunctions.ts'
+import loadPresetFunctionsBuffer from './assemblyscript/presetFunctions.as'
 import AudioProcessor from './audio/audioProcessor'
 import Renderer from './rendering/renderer'
 import Utils from './utils'
 import { initializeRNG } from './utils/rngContext'
 
 export default class Visualizer {
-  constructor(audioContext, canvas, opts) {
+  opts: RNGOptions
+  rng: RNGContext
+  deterministicMode: boolean
+  audio: AudioProcessor
+  audioNode!: AudioNode | null
+  internalCanvas: HTMLCanvasElement | OffscreenCanvas
+  gl: WebGL2RenderingContext | null
+  outputGl: CanvasRenderingContext2D | null
+  baseValsDefaults: BaseVals
+  shapeBaseValsDefaults: BaseVals
+  waveBaseValsDefaults: BaseVals
+  qs: string[]
+  ts: string[]
+  globalPerFrameVars: string[]
+  globalPerPixelVars: string[]
+  globalShapeVars: string[]
+  shapeBaseVars: string[]
+  globalWaveVars: string[]
+  renderer: Renderer
+
+  constructor(audioContext: AudioContext, canvas: HTMLCanvasElement, opts: RNGOptions = {}) {
     this.opts = opts
 
     // Initialize RNG context
     this.rng = initializeRNG(opts)
-    this.deterministicMode = opts.deterministic || opts.testMode
+    this.deterministicMode = opts.deterministic || opts.testMode || false
     this.audio = new AudioProcessor(audioContext)
 
     const vizWidth = opts.width || 1200
@@ -280,7 +303,7 @@ export default class Visualizer {
   }
 
   loseGLContext() {
-    this.gl.getExtension('WEBGL_lose_context').loseContext()
+    this.gl?.getExtension('WEBGL_lose_context')?.loseContext()
     this.outputGl = null
   }
 
@@ -481,7 +504,7 @@ export default class Visualizer {
     const qWasmVars = this.createQVars()
     const tWasmVars = this.createTVars()
 
-    const wasmVarPools = {
+    const wasmVarPools: any = {
       perFrame: { ...qWasmVars, ...this.createPerFramePool(preset.baseVals) },
       perVertex: {
         ...qWasmVars,
@@ -489,7 +512,7 @@ export default class Visualizer {
       },
     }
 
-    const wasmFunctions = {
+    const wasmFunctions: any = {
       presetInit: { pool: 'perFrame', code: preset.init_eqs_eel },
       perFrame: { pool: 'perFrame', code: preset.frame_eqs_eel },
     }
@@ -556,10 +579,10 @@ export default class Visualizer {
 
     // eel-wasm returns null if the function was empty
     const handleEmptyFunction = (f) => {
-      return f || (() => {})
+      return f || (() => { })
     }
 
-    const presetFunctionsMod = await ascLoader.instantiate(
+    const presetFunctionsMod: PresetFunctionsModule = await ascLoader.instantiate(
       Visualizer.base64ToArrayBuffer(loadPresetFunctionsBuffer()),
       {
         pixelEqs: {
@@ -666,7 +689,7 @@ export default class Visualizer {
 
     for (let i = 0; i < preset.waves.length; i++) {
       if (preset.waves[i].baseVals.enabled !== 0) {
-        const wave = {
+        const wave: any = {
           init_eqs: handleEmptyFunction(mod.exports[`waves_${i}_init_eqs`]),
           frame_eqs: handleEmptyFunction(mod.exports[`waves_${i}_frame_eqs`]),
         }
@@ -722,7 +745,7 @@ export default class Visualizer {
 
       for (let i = 0; i < preset.waves.length; i++) {
         if (preset.waves[i].baseVals.enabled !== 0) {
-          const wave = {
+          const wave: any = {
             init_eqs: new Function(
               'a',
               `${preset.waves[i].init_eqs_str} return a;`,

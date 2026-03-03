@@ -1,5 +1,5 @@
 export default class Utils {
-  static atan2(x, y) {
+  static atan2(x: number, y: number): number {
     let a = Math.atan2(x, y)
     if (a < 0) {
       a += 2 * Math.PI
@@ -7,21 +7,20 @@ export default class Utils {
     return a
   }
 
-  static cloneVars(vars) {
+  static cloneVars(vars: Record<string, any>): Record<string, any> {
     return Object.assign({}, vars)
   }
 
-  static range(start, end) {
+  static range(start: number, end?: number): number[] {
     if (end === undefined) {
-      // return [...new Array(start).keys()]
       return Array.from({ length: start }, (_, i) => i)
     }
 
     return Array.from({ length: end - start }, (_, i) => i + start)
   }
 
-  static pick(obj, keys) {
-    const newObj = {}
+  static pick(obj: Record<string, any>, keys: string[]): Record<string, any> {
+    const newObj: Record<string, any> = {}
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i]
       newObj[key] = obj[key] || 0
@@ -29,7 +28,7 @@ export default class Utils {
     return newObj
   }
 
-  static omit(obj, keys) {
+  static omit(obj: Record<string, any>, keys: string[]): Record<string, any> {
     const newObj = Object.assign({}, obj)
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i]
@@ -38,7 +37,7 @@ export default class Utils {
     return newObj
   }
 
-  static setWasm(wasmGlobals, obj, keys) {
+  static setWasm(wasmGlobals: Record<string, WebAssembly.Global>, obj: Record<string, any>, keys: string[]) {
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i]
 
@@ -46,8 +45,8 @@ export default class Utils {
     }
   }
 
-  static pickWasm(wasmGlobals, keys) {
-    const newObj = {}
+  static pickWasm(wasmGlobals: Record<string, WebAssembly.Global>, keys: string[]) {
+    const newObj: Record<string, any> = {}
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i]
       newObj[key] = wasmGlobals[key].value

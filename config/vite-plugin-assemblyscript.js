@@ -3,7 +3,7 @@ import asc from 'assemblyscript/asc'
 import { createFilter } from 'vite'
 
 function assemblyscriptPlugin(options = {}) {
-  const filter = createFilter(options.include || /\.ts$/, options.exclude)
+  const filter = createFilter(options.include || /\.as$/, options.exclude)
 
   return {
     name: 'assemblyscript',

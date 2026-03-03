@@ -5,10 +5,13 @@ let originalRand: ((x: number) => number) | null = null
 let originalRandint: ((x: number) => number) | null = null
 let originalMathRandom: (() => number) | null = null
 
-interface RNGOptions {
+export interface RNGOptions {
   deterministic?: boolean
   testMode?: boolean
   seed?: number
+  width?: number
+  height?: number
+  onlyUseWASM?: boolean
 }
 
 export interface RNGContext {
@@ -19,7 +22,7 @@ export interface RNGContext {
   reset: (newSeed?: number) => void
 }
 
-export function initializeRNG(opts: RNGOptions = {}) {
+export function initializeRNG(opts: RNGOptions = {}): RNGContext {
   if (opts.deterministic || opts.testMode) {
     globalRNG = createRNGContext(opts.seed || 12345)
   }
