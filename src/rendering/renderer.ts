@@ -398,7 +398,7 @@ export default class Renderer {
       // copy target texture, because we flip prev/target at start of render
       const targetTextureNew = this.gl.createTexture()
       this.bindFrameBufferTexture(this.targetFrameBuffer, targetTextureNew)
-      this.bindFrambufferAndSetViewport(
+      this.bindFramebufferAndSetViewport(
         this.targetFrameBuffer,
         this.texsizeX,
         this.texsizeY,
@@ -861,7 +861,7 @@ export default class Renderer {
     }
   }
 
-  bindFrambufferAndSetViewport(fb: WebGLFramebuffer | null, width: number, height: number) {
+  bindFramebufferAndSetViewport(fb: WebGLFramebuffer | null, width: number, height: number) {
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, fb)
     this.gl.viewport(0, 0, width, height)
   }
@@ -1014,7 +1014,7 @@ export default class Renderer {
     this.gl.generateMipmap(this.gl.TEXTURE_2D)
 
     if (this.targetFrameBuffer) {
-      this.bindFrambufferAndSetViewport(
+      this.bindFramebufferAndSetViewport(
         this.targetFrameBuffer,
         this.texsizeX,
         this.texsizeY,
@@ -1101,7 +1101,7 @@ export default class Renderer {
 
       if (this.targetFrameBuffer) {
       // rebind target texture framebuffer
-        this.bindFrambufferAndSetViewport(
+        this.bindFramebufferAndSetViewport(
           this.targetFrameBuffer,
           this.texsizeX,
           this.texsizeY,
@@ -1215,14 +1215,14 @@ export default class Renderer {
 
   renderToScreen() {
     if (this.outputFXAA && this.compFrameBuffer) {
-      this.bindFrambufferAndSetViewport(
+      this.bindFramebufferAndSetViewport(
         this.compFrameBuffer,
         this.texsizeX,
         this.texsizeY,
       )
     }
     else {
-      this.bindFrambufferAndSetViewport(null, this.width, this.height)
+      this.bindFramebufferAndSetViewport(null, this.width, this.height)
     }
 
     this.gl.clear(this.gl.COLOR_BUFFER_BIT)
@@ -1288,7 +1288,7 @@ export default class Renderer {
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.compTexture)
       this.gl.generateMipmap(this.gl.TEXTURE_2D)
 
-      this.bindFrambufferAndSetViewport(null, this.width, this.height)
+      this.bindFramebufferAndSetViewport(null, this.width, this.height)
       this.outputShader.renderQuadTexture(this.compTexture)
     }
   }

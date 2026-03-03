@@ -66,7 +66,7 @@ export default class BlurShader {
     this.verticalTexsizes = [srcTexsizeVertical, dstTexsizeVertical]
   }
 
-  bindFrambufferAndSetViewport(fb, texsize) {
+  bindFramebufferAndSetViewport(fb, texsize) {
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, fb)
     this.gl.viewport(0, 0, texsize[0], texsize[1])
   }
@@ -131,7 +131,7 @@ export default class BlurShader {
   }
 
   renderBlurTexture(prevTexture, mdVSFrame, blurMins, blurMaxs) {
-    this.bindFrambufferAndSetViewport(
+    this.bindFramebufferAndSetViewport(
       this.blurHorizontalFrameBuffer,
       this.horizontalTexsizes[1],
     )
@@ -146,7 +146,7 @@ export default class BlurShader {
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.blurHorizontalTexture)
     this.gl.generateMipmap(this.gl.TEXTURE_2D)
 
-    this.bindFrambufferAndSetViewport(
+    this.bindFramebufferAndSetViewport(
       this.blurVerticalFrameBuffer,
       this.verticalTexsizes[1],
     )
